@@ -1,0 +1,11 @@
+package com.rmj.dataset
+import  package com.rmj.dataset.SalesRecord;
+
+
+
+rule "Multiple of UnitCost "
+   when
+    salesRecord:SalesRecord(UnitCost > 40 )
+   then
+   true
+end
