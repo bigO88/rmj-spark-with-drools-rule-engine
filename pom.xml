@@ -15,11 +15,11 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <encoding>UTF-8</encoding>
-        <drools.version>6.4.0.Final</drools.version>
-        <spark.version>1.6.0</spark.version>
-        <scala.version>2.10.6</scala.version>
+        <drools.version>7.10.0.Final</drools.version>
+        <spark.version>2.3.0</spark.version>
+        <scala.version>2.11.8</scala.version>
         <ignite.version>2.3.0</ignite.version>
-        <scala.compat.version>2.10</scala.compat.version>
+        <scala.compat.version>2.11</scala.compat.version>
     </properties>
 
     <dependencies>
@@ -90,7 +90,7 @@
         <dependency>
             <groupId>org.kie</groupId>
             <artifactId>kie-api</artifactId>
-            <version>6.5.0.Final</version>
+            <version>7.10.0.Final</version>
         </dependency>
 
 
@@ -126,7 +126,13 @@
             <version>3.0.5</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>4.1.17.Final</version>
+        </dependency>
     </dependencies>
+
     <build>
         <sourceDirectory>src/main/scala</sourceDirectory>
         <testSourceDirectory>src/test/scala</testSourceDirectory>

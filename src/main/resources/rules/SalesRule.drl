@@ -1,11 +1,10 @@
-package com.rmj.dataset
-import  package com.rmj.dataset.SalesRecord;
+package com.rmj.dataset;
 
+import com.rmj.dataset.SalesRecord;
 
-
-rule "Multiple of UnitCost "
+rule "Calculate Total for OrderID greater then 897751939 "
    when
-    salesRecord:SalesRecord(UnitCost > 40 )
+    s:SalesRecord ( orderID > 897751939 );
    then
-   true
+   s.setTotal(s.getUnitCost()+s.getTotalRevenue()+s.getTotalCost()+s.getTotalProfit());
 end

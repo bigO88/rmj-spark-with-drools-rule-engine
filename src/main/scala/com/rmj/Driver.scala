@@ -10,11 +10,11 @@ object Driver {
 
   def main(args: Array[String]): Unit = {
 
-    val conf = new SparkConf(true).setAppName("drool").setMaster("local[2]")
+    val conf = new SparkConf(true).setAppName("drool integration with Spark").setMaster("local[2]")
 
     val sc = new SparkContext(conf)
 
-    val infile="/home/rajjanwa/sample_data.csv"
+    val infile = "/home/rajjanwa/sample_data.csv"
 
     val rdd = sc.textFile(infile).map { x =>
       SalesRecord(
@@ -31,20 +31,26 @@ object Driver {
         x.split(",")(10).toDouble,
         x.split(",")(11).toDouble,
         x.split(",")(12).toDouble,
-        x.split(",")(13).toDouble
+        x.split(",")(13).toDouble,
+        0D
       )
-    }.map { salesRecord =>
+    }
+
+    rdd.filter(x => x.orderID > 897751939).foreach(println(_))
+
+    val resultRDD = rdd.map { salesRecord =>
 
       val kieService = KieServices.Factory.get()
       val kieContainer = kieService.getKieClasspathContainer
       val kSession = kieContainer.newKieSession("ksession-rules")
       kSession.insert(salesRecord)
       kSession.fireAllRules()
+      salesRecord
+    }.filter(_.orderID > 897751939)
 
-    }
+    resultRDD.foreach(x => println(x))
 
-    rdd.foreach(x=> print(x))
-     sc.stop()
+    sc.stop()
 
   }
 }
