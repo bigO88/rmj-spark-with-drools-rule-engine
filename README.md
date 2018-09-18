@@ -1,3 +1,1 @@
-# bigO88pgm1
-My test programs
-This is for my test related programs.
+This repo is integration of drools rule engine with spark in dynamic mode caculation changes on business models.
