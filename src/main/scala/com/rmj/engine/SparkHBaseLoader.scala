@@ -1,4 +1,4 @@
-package com.rmj.demo
+package com.rmj.engine
 
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.hadoop.hbase.HBaseConfiguration

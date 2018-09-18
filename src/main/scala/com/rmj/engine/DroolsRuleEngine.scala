@@ -1,11 +1,11 @@
-package com.rmj
+package com.rmj.engine
 
 import com.rmj.dataset.SalesRecord
 import org.apache.spark.{SparkConf, SparkContext}
 import org.kie.api.KieServices
 
 
-object Driver {
+object DroolsRuleEngine {
 
 
   def main(args: Array[String]): Unit = {
@@ -14,7 +14,7 @@ object Driver {
 
     val sc = new SparkContext(conf)
 
-    val infile = "/home/rajjanwa/sample_data.csv"
+    val infile = args(0)  // Sample file here: /src/main/resources/sample_data.csv"
 
     val rdd = sc.textFile(infile).map { x =>
       SalesRecord(
