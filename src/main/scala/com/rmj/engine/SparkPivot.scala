@@ -5,6 +5,9 @@ import org.apache.spark.sql.types.{StructField, StructType}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Row, SparkSession}
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.functions.{lead, lag}
+import org.apache.spark.sql.expressions.Window
+
 
 object SparkPivot {
 
@@ -15,7 +18,7 @@ object SparkPivot {
       .master("local[2]")
       .getOrCreate()
 
-    val infile = args(0)  // Sample file here: /src/main/resources/sample_data.csv"
+    val infile =  args(0)  // Sample file here: /src/main/resources/sample_data.csv"
     val outpath = args(1)
 
     val rdd = spark.sparkContext.textFile(infile).map(x => Row.fromSeq(x.split(",")))
@@ -37,13 +40,17 @@ object SparkPivot {
       StructField("totalProfit", StringType, nullable = false)
     ))
 
-    val selectQuery = "region,country,itemType,salesChannel,orderPriority,unitsSold,unitCost".split(",").toList
+    val selectQuery = "region,country,itemType,salesChannel,orderDate,orderPriority,unitsSold,unitCost".split(",").toList
 
     val groupedCols = "region,country,salesChannel,orderPriority".split(",").toList
 
+    val groupedCols1 = "region,country,itemType,salesChannel,orderPriority,orderDate".split(",").toList
+
+    val partitionCols = "region,country,itemType,orderDate".split(",").toList
+
     val df = spark.createDataFrame(rdd, schema = inputRecordSchema)
 
-    val df1 = df.select(selectQuery.head, selectQuery.tail: _*)
+    val df1 = df.select(selectQuery.head, selectQuery.tail: _*).filter(df("country") === "India")
 
     val getTotalAmount = udf {
 
@@ -58,19 +65,31 @@ object SparkPivot {
         }
     }
 
+    val convertDateToYear = udf {
+      x: String => x.split("/")(2)
+    }
+
     val df2 = df1.withColumn("unitsSold", df1("unitsSold").cast(LongType))
       .withColumn("unitCost", df1("unitCost").cast(DoubleType))
+      .withColumn("orderDate", convertDateToYear(df1("orderDate")))
 
     val df3 = df2.withColumn("totalAmount", getTotalAmount(df2("unitsSold"), df2("unitCost"), df2("salesChannel")))
-      .drop("unitCost").drop("unitsSold")
+      .drop("unitCost").drop("unitsSold").groupBy(groupedCols1.head, groupedCols1.tail: _*)
+      .agg(sum("totalAmount").alias("totalAmount"))
 
-    val df4 = df3.groupBy(groupedCols.head, groupedCols.tail: _*)
+    val window = org.apache.spark.sql.expressions.Window.partitionBy(partitionCols.head, partitionCols.tail: _*) orderBy ("orderDate")
+
+    val df4 = df3.withColumn("pre_totalAmount", lag("totalAmount", 1, 0).over(window))
+
+    val df5 = df4.groupBy(groupedCols.head, groupedCols.tail: _*)
       .pivot("itemType")
       .sum("totalAmount")
-      .filter(df3("region") === "Asia")
 
-    df4.write.csv(outpath)
+    df5.write.csv(outpath)
 
+    val df6 = df4.withColumn("pre_totalAmount_1", lag("pre_totalAmount", 1, 0).over(window))
+
+    df6.write.csv(outpath+"/pre-data")
     spark.stop()
 
   }
